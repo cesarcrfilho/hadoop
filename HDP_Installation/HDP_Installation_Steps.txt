@@ -9,6 +9,9 @@ Available here: https://www.udemy.com/hortonworks-data-platform-administration
 
 I've used Google Cloud Platform with CentOS 7 64-bit to run this installation.
 
+Prerequisite) Run the pre_req.sh file in all nodes, changing the hostname for each one.
+Available here: https://github.com/cesarcrfilho/hadoop/blob/master/HDP_Installation/pre_req.sh
+
 1) Install wget and http
 
     > yum -y install wget httpd
