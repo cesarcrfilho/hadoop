@@ -1,0 +1,131 @@
+--- HortonWorks HDP Installation Steps ---
+
+Author: Cesar Rodrigues
+Email:  cesarcrfilho@gmail.com
+Date:   November 14, 2018
+
+This guide was based on the Udemy course Hortonworks Data Platform Administration Training by Sijeesh Kunnotharamal
+Available here: https://www.udemy.com/hortonworks-data-platform-administration
+
+I've used Google Cloud Platform with CentOS 7 64-bit to run this installation.
+
+1) Install wget and http
+
+    > yum -y install wget httpd
+
+  - enable http
+
+    > systemctl enable httpd
+
+  - start the httpd
+
+    > systemctl start httpd
+    > systemctl status httpd
+
+2) Get HDP files from HortonWorks
+
+  - navigate to the HortonWorks documentation page; select Ambari and copy the Tarball link from the public repository page
+  - use the wget command to download it
+
+    e.g.
+    > wget http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.7.1.0/ambari-2.7.1.0-centos7.tar.gz
+
+  - do the same for HDP, HDP-GPL, and HDP-UTILS
+
+3) Uncompress the downloaded files to /var/www/html (master node only)
+  - Use the following command to uncompress the downloaded files to folder /var/www/html
+    > tar zxvf [FILE NAME] -C /var/www/html/
+
+    e.g.
+    > tar zxvf ambari-2.7.1.0-centos7.tar.gz -C /var/www/html/
+
+  Do the same for HDP, HDP-UTILS, and HDP-GPL
+
+    e.g.
+    > tar zxvf HDP-3.0.1.0-centos7-rpm.tar.gz -C /var/www/html/
+    > tar zxvf HDP-UTILS-1.1.0.22-centos7.tar.gz -C /var/www/html/
+    > tar zxvf HDP-GPL-3.0.1.0-centos7-gpl.tar.gz -C /var/www/html/
+
+4) Get the path to the repodata folder for Ambari, HDP, HDP-UTILS, and HDP-GPL
+
+  - using the public ip address, navigate through the uncompressed folder until you reach the one containing the repodata
+  http://[PUBLIC IP]/ambari
+
+    e.g.
+    Ambari
+    http://104.196.185.131/ambari/centos7/2.7.1.0-169/
+
+    HDP
+    http://104.196.185.131/HDP/centos7/3.0.1.0-187/
+    http://104.196.185.131/HDP-GPL/centos7/3.0.1.0-187/
+    http://104.196.185.131/HDP-UTILS/centos7/1.1.0.22/
+
+  - replace the public IPs with the server hostname
+
+    e.g.
+    Ambari
+    http://master1.hadoop.com/ambari/centos7/2.7.1.0-169/
+
+    HDP
+    http://master1.hadoop.com/HDP/centos7/3.0.1.0-187/
+    http://master1.hadoop.com/HDP-GPL/centos7/3.0.1.0-187/
+    http://master1.hadoop.com/HDP-UTILS/centos7/1.1.0.22/
+
+5) Create the repos (ALL nodes)
+
+  - back to the console, navigate to /etc/yum.repos.d/
+
+    > cd /etc/yum.repos.d/
+
+  - create the Ambari repo in /etc/yum.repos.d/
+
+    > vi ambari.repo
+
+  - use the following content:
+
+    [ambari]
+    name = Ambari Repo
+    baseurl = http://master1.hadoop.com/ambari/centos7/2.7.1.0-169/
+    gpgcheck = 0
+
+    * where baseurl is the previous saved repodata path
+
+    > yum clean all
+
+    > yum makecache
+
+  - check if the Ambari Repo was created
+
+    > yum repolist
+
+  * don't forget to repeat this for all nodes
+
+6) Install the ambari-server and ambari-agent
+
+  - install the ambari-server and ambari-agent in the master node
+
+    > yum -y install ambari-server ambari-agent
+
+  - install the ambari-agent in all other nodes
+
+    > yum -y install ambari-agent
+
+7) Setup ambari-server (master node only)
+
+    > ambari-server setup
+
+    * use all defaults to install JDK
+    * select (y) to install GPL Licensed LZO packages
+    * go ahead with defaults for the rest
+
+8) Update ambari-agent.ini file (all nodes)
+
+    > vi /etc/ambari-agent/conf/ambari-agent.ini
+
+  - change the hostname=localhost to hostname=[SERVER HOST NAME]
+    e.g.
+    hostname=master1.hadoop.com
+
+  * do the same for all nodes and start ambari-agent
+
+    > ambari-agent start
